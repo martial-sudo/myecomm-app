@@ -63,6 +63,8 @@ steps:
 
             pm2 start app.js
 
+            pm2 startup systemd -u azureuser --hp /home/azureuser
+
             pm2 save
           "
 
