@@ -29,11 +29,18 @@ app.get("/", async (req, res) => {
 
         let html = `
         <html>
+
+        <head>
+            <title>MyEcomm Store</title>
+        </head>
+
         <body style="font-family:Arial;padding:40px;background:#f5f5f5;">
 
         <h1>MyEcomm Store</h1>
 
-        <h2>Server: ${os.hostname()}</h2>
+        <h3>Server: ${os.hostname()}</h3>
+
+        <h2>Add Product</h2>
 
         <form method="POST" action="/add-product">
 
@@ -53,15 +60,88 @@ app.get("/", async (req, res) => {
         </form>
 
         <hr>
+
+        <h2>Products</h2>
         `;
 
         result.recordset.forEach(product => {
 
             html += `
-                <div style="background:white;padding:20px;margin-top:20px;border-radius:10px;">
-                    <h3>${product.ProductName}</h3>
-                    <p>Price: ₹${product.Price}</p>
-                    <p>Quantity: ${product.Quantity}</p>
+                <div style="
+                    background:white;
+                    padding:20px;
+                    margin-top:20px;
+                    border-radius:10px;
+                    box-shadow:0px 0px 10px rgba(0,0,0,0.1);
+                ">
+
+                    <form method="POST" action="/update-product">
+
+                        <input type="hidden" name="id" value="${product.ProductID}" />
+
+                        <label>Product Name</label>
+                        <br><br>
+
+                        <input 
+                            type="text" 
+                            name="name" 
+                            value="${product.ProductName}" 
+                            required
+                        />
+
+                        <br><br>
+
+                        <label>Price</label>
+                        <br><br>
+
+                        <input 
+                            type="number" 
+                            name="price" 
+                            value="${product.Price}" 
+                            required
+                        />
+
+                        <br><br>
+
+                        <label>Quantity</label>
+                        <br><br>
+
+                        <input 
+                            type="number" 
+                            name="quantity" 
+                            value="${product.Quantity}" 
+                            required
+                        />
+
+                        <br><br>
+
+                        <button type="submit">
+                            Update
+                        </button>
+
+                    </form>
+
+                    <br>
+
+                    <form method="POST" action="/delete-product">
+
+                        <input type="hidden" name="id" value="${product.ProductID}" />
+
+                        <button 
+                            type="submit"
+                            style="
+                                background:red;
+                                color:white;
+                                border:none;
+                                padding:10px;
+                                cursor:pointer;
+                            "
+                        >
+                            Delete
+                        </button>
+
+                    </form>
+
                 </div>
             `;
         });
@@ -94,6 +174,50 @@ app.post("/add-product", async (req, res) => {
                 ${req.body.price},
                 ${req.body.quantity}
             )
+        `;
+
+        res.redirect("/");
+
+    } catch (err) {
+
+        res.send(err.message);
+    }
+});
+
+app.post("/update-product", async (req, res) => {
+
+    try {
+
+        await sql.connect(config);
+
+        await sql.query`
+            UPDATE Products
+
+            SET
+                ProductName = ${req.body.name},
+                Price = ${req.body.price},
+                Quantity = ${req.body.quantity}
+
+            WHERE ProductID = ${req.body.id}
+        `;
+
+        res.redirect("/");
+
+    } catch (err) {
+
+        res.send(err.message);
+    }
+});
+
+app.post("/delete-product", async (req, res) => {
+
+    try {
+
+        await sql.connect(config);
+
+        await sql.query`
+            DELETE FROM Products
+            WHERE ProductID = ${req.body.id}
         `;
 
         res.redirect("/");
