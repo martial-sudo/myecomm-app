@@ -5,6 +5,10 @@ param adminPassword string
 
 param adminUsername string = 'azureuser'
 
+var backendPoolName = 'backendPool'
+var probeName = 'httpProbe'
+var frontendName = 'frontendPool'
+
 resource vnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
   name: 'vnet-myecomm'
   location: location
@@ -100,9 +104,10 @@ resource lb 'Microsoft.Network/loadBalancers@2023-05-01' = {
   }
 
   properties: {
+
     frontendIPConfigurations: [
       {
-        name: 'frontendPool'
+        name: frontendName
 
         properties: {
           publicIPAddress: {
@@ -111,49 +116,64 @@ resource lb 'Microsoft.Network/loadBalancers@2023-05-01' = {
         }
       }
     ]
-  }
-}
 
-resource backendPool 'Microsoft.Network/loadBalancers/backendAddressPools@2023-05-01' = {
-  parent: lb
-  name: 'backendPool'
-}
+    backendAddressPools: [
+      {
+        name: backendPoolName
+      }
+    ]
 
-resource probe 'Microsoft.Network/loadBalancers/probes@2023-05-01' = {
-  parent: lb
-  name: 'httpProbe'
+    probes: [
+      {
+        name: probeName
 
-  properties: {
-    protocol: 'Tcp'
-    port: 80
-  }
-}
+        properties: {
+          protocol: 'Tcp'
+          port: 80
+        }
+      }
+    ]
 
-resource lbRule 'Microsoft.Network/loadBalancers/loadBalancingRules@2023-05-01' = {
-  parent: lb
-  name: 'httpRule'
+    loadBalancingRules: [
+      {
+        name: 'httpRule'
 
-  properties: {
+        properties: {
 
-    frontendIPConfiguration: {
-      id: '${lb.id}/frontendIPConfigurations/frontendPool'
-    }
+          frontendIPConfiguration: {
+            id: resourceId(
+              'Microsoft.Network/loadBalancers/frontendIPConfigurations',
+              'lb-myecomm',
+              frontendName
+            )
+          }
 
-    backendAddressPool: {
-      id: backendPool.id
-    }
+          backendAddressPool: {
+            id: resourceId(
+              'Microsoft.Network/loadBalancers/backendAddressPools',
+              'lb-myecomm',
+              backendPoolName
+            )
+          }
 
-    probe: {
-      id: probe.id
-    }
+          probe: {
+            id: resourceId(
+              'Microsoft.Network/loadBalancers/probes',
+              'lb-myecomm',
+              probeName
+            )
+          }
 
-    protocol: 'Tcp'
-    frontendPort: 80
-    backendPort: 80
-    enableFloatingIP: false
-    idleTimeoutInMinutes: 4
-    loadDistribution: 'Default'
-    disableOutboundSnat: true
+          protocol: 'Tcp'
+          frontendPort: 80
+          backendPort: 80
+          enableFloatingIP: false
+          idleTimeoutInMinutes: 4
+          loadDistribution: 'Default'
+          disableOutboundSnat: true
+        }
+      }
+    ]
   }
 }
 
@@ -216,7 +236,11 @@ resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2023-03-01' = {
 
                     loadBalancerBackendAddressPools: [
                       {
-                        id: backendPool.id
+                        id: resourceId(
+                          'Microsoft.Network/loadBalancers/backendAddressPools',
+                          'lb-myecomm',
+                          backendPoolName
+                        )
                       }
                     ]
                   }
