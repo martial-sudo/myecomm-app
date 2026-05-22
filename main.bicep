@@ -137,32 +137,24 @@ resource lb 'Microsoft.Network/loadBalancers@2023-05-01' = {
         properties: {
 
           frontendIPConfiguration: {
-            id: resourceId(
-              'Microsoft.Network/loadBalancers/frontendIPConfigurations',
-              lb.name,
-              'frontendPool'
-            )
+            id: '${lb.id}/frontendIPConfigurations/frontendPool'
           }
 
           backendAddressPool: {
-            id: resourceId(
-              'Microsoft.Network/loadBalancers/backendAddressPools',
-              lb.name,
-              'backendPool'
-            )
+            id: '${lb.id}/backendAddressPools/backendPool'
           }
 
           probe: {
-            id: resourceId(
-              'Microsoft.Network/loadBalancers/probes',
-              lb.name,
-              'httpProbe'
-            )
+            id: '${lb.id}/probes/httpProbe'
           }
 
           protocol: 'Tcp'
           frontendPort: 80
           backendPort: 80
+          enableFloatingIP: false
+          idleTimeoutInMinutes: 4
+          loadDistribution: 'Default'
+          disableOutboundSnat: true
         }
       }
     ]
@@ -228,11 +220,7 @@ resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2023-03-01' = {
 
                     loadBalancerBackendAddressPools: [
                       {
-                        id: resourceId(
-                          'Microsoft.Network/loadBalancers/backendAddressPools',
-                          lb.name,
-                          'backendPool'
-                        )
+                        id: '${lb.id}/backendAddressPools/backendPool'
                       }
                     ]
                   }
