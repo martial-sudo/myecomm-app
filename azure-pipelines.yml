@@ -8,7 +8,7 @@ steps:
 
 - task: AzureCLI@2
   inputs:
-    azureSubscription: 'azure-ap'
+    azureSubscription: 'Azure-Service-Connection'
     scriptType: bash
     scriptLocation: inlineScript
     inlineScript: |
@@ -20,20 +20,30 @@ steps:
 
 - task: AzureCLI@2
   inputs:
-    azureSubscription: 'azure-ap'
+    azureSubscription: 'Azure-Service-Connection'
     scriptType: bash
     scriptLocation: inlineScript
     inlineScript: |
 
-      for id in 0 1
+      INSTANCE_IDS=$(az vmss list-instances \
+        --resource-group RG-User01 \
+        --name myecomm-vmss \
+        --query "[].instanceId" \
+        -o tsv)
+
+      for id in $INSTANCE_IDS
       do
+
+        echo "Deploying to instance: $id"
 
         az vmss run-command invoke \
           --resource-group RG-User01 \
           --name myecomm-vmss \
           --instance-id $id \
           --command-id RunShellScript \
-          --scripts '
+          --scripts "
+
+            sudo npm install -g pm2
 
             cd /home/azureuser
 
@@ -50,6 +60,6 @@ steps:
             pm2 start app.js
 
             pm2 save
-          '
+          "
 
       done
