@@ -8,7 +8,7 @@ steps:
 
 - task: AzureCLI@2
   inputs:
-    azureSubscription: 'azure-ap'
+    azureSubscription: 'Azure-Service-Connection'
     scriptType: bash
     scriptLocation: inlineScript
     inlineScript: |
@@ -20,7 +20,7 @@ steps:
 
 - task: AzureCLI@2
   inputs:
-    azureSubscription: 'azure-ap'
+    azureSubscription: 'Azure-Service-Connection'
     scriptType: bash
     scriptLocation: inlineScript
     inlineScript: |
@@ -42,6 +42,10 @@ steps:
           --instance-id $id \
           --command-id RunShellScript \
           --scripts "
+
+            curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+
+            sudo apt-get install -y nodejs git
 
             sudo npm install -g pm2
 

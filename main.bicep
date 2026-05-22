@@ -234,6 +234,14 @@ resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2023-03-01' = {
                       id: subnetNsg.id
                     }
 
+                    publicIPAddressConfiguration: {
+                      name: 'vmss-publicip'
+
+                      properties: {
+                        idleTimeoutInMinutes: 10
+                      }
+                    }
+
                     loadBalancerBackendAddressPools: [
                       {
                         id: resourceId(
