@@ -1,0 +1,55 @@
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+
+- task: AzureCLI@2
+  inputs:
+    azureSubscription: 'Azure-Service-Connection'
+    scriptType: bash
+    scriptLocation: inlineScript
+    inlineScript: |
+
+      az deployment group create \
+        --resource-group RG-User01 \
+        --template-file main.bicep \
+        --parameters @parameters.json
+
+- task: AzureCLI@2
+  inputs:
+    azureSubscription: 'Azure-Service-Connection'
+    scriptType: bash
+    scriptLocation: inlineScript
+    inlineScript: |
+
+      for id in 0 1
+      do
+
+        az vmss run-command invoke \
+          --resource-group RG-User01 \
+          --name myecomm-vmss \
+          --instance-id $id \
+          --command-id RunShellScript \
+          --scripts '
+
+            cd /home/azureuser
+
+            sudo rm -rf myecomm-app
+
+            git clone https://github.com/martial-sudo/myecomm-app>.git
+
+            cd myecomm-app
+
+            npm install
+
+            pm2 delete all || true
+
+            pm2 start app.js
+
+            pm2 save
+          '
+
+      done

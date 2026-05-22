@@ -1,0 +1,9 @@
+#cloud-config
+
+package_update: true
+
+runcmd:
+  - curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+  - sudo apt install -y nodejs git
+  - sudo npm install -g pm2
+  - mkdir -p /home/azureuser/myecomm-app
