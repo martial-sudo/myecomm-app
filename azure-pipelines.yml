@@ -39,7 +39,7 @@ steps:
 
             sudo rm -rf myecomm-app
 
-            git clone https://github.com/martial-sudo/myecomm-app>.git
+            git clone https://github.com/martial-sudo/myecomm-app.git
 
             cd myecomm-app
 
