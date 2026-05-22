@@ -49,7 +49,7 @@ resource sshRule 'Microsoft.Network/networkSecurityGroups/securityRules@2023-05-
   }
 }
 
-resource httpRule 'Microsoft.Network/networkSecurityGroups/securityRules@2023-05-01' = {
+resource httpRuleNsg 'Microsoft.Network/networkSecurityGroups/securityRules@2023-05-01' = {
   parent: nsg
   name: 'AllowHTTP'
 
@@ -100,7 +100,6 @@ resource lb 'Microsoft.Network/loadBalancers@2023-05-01' = {
   }
 
   properties: {
-
     frontendIPConfigurations: [
       {
         name: 'frontendPool'
@@ -112,52 +111,49 @@ resource lb 'Microsoft.Network/loadBalancers@2023-05-01' = {
         }
       }
     ]
+  }
+}
 
-    backendAddressPools: [
-      {
-        name: 'backendPool'
-      }
-    ]
+resource backendPool 'Microsoft.Network/loadBalancers/backendAddressPools@2023-05-01' = {
+  parent: lb
+  name: 'backendPool'
+}
 
-    probes: [
-      {
-        name: 'httpProbe'
+resource probe 'Microsoft.Network/loadBalancers/probes@2023-05-01' = {
+  parent: lb
+  name: 'httpProbe'
 
-        properties: {
-          protocol: 'Tcp'
-          port: 80
-        }
-      }
-    ]
+  properties: {
+    protocol: 'Tcp'
+    port: 80
+  }
+}
 
-    loadBalancingRules: [
-      {
-        name: 'httpRule'
+resource lbRule 'Microsoft.Network/loadBalancers/loadBalancingRules@2023-05-01' = {
+  parent: lb
+  name: 'httpRule'
 
-        properties: {
+  properties: {
 
-          frontendIPConfiguration: {
-            id: '${lb.id}/frontendIPConfigurations/frontendPool'
-          }
+    frontendIPConfiguration: {
+      id: '${lb.id}/frontendIPConfigurations/frontendPool'
+    }
 
-          backendAddressPool: {
-            id: '${lb.id}/backendAddressPools/backendPool'
-          }
+    backendAddressPool: {
+      id: backendPool.id
+    }
 
-          probe: {
-            id: '${lb.id}/probes/httpProbe'
-          }
+    probe: {
+      id: probe.id
+    }
 
-          protocol: 'Tcp'
-          frontendPort: 80
-          backendPort: 80
-          enableFloatingIP: false
-          idleTimeoutInMinutes: 4
-          loadDistribution: 'Default'
-          disableOutboundSnat: true
-        }
-      }
-    ]
+    protocol: 'Tcp'
+    frontendPort: 80
+    backendPort: 80
+    enableFloatingIP: false
+    idleTimeoutInMinutes: 4
+    loadDistribution: 'Default'
+    disableOutboundSnat: true
   }
 }
 
@@ -220,7 +216,7 @@ resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2023-03-01' = {
 
                     loadBalancerBackendAddressPools: [
                       {
-                        id: '${lb.id}/backendAddressPools/backendPool'
+                        id: backendPool.id
                       }
                     ]
                   }
