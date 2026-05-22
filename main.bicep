@@ -5,10 +5,6 @@ param adminPassword string
 
 param adminUsername string = 'azureuser'
 
-param sqlServerName string = 'sqlmyecommserver001'
-
-param sqlDatabaseName string = 'myecommdb'
-
 resource vnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
   name: 'vnet-myecomm'
   location: location
@@ -170,37 +166,6 @@ resource lb 'Microsoft.Network/loadBalancers@2023-05-01' = {
         }
       }
     ]
-  }
-}
-
-resource sqlServer 'Microsoft.Sql/servers@2022-05-01-preview' = {
-  name: sqlServerName
-  location: location
-
-  properties: {
-    administratorLogin: adminUsername
-    administratorLoginPassword: adminPassword
-  }
-}
-
-resource sqlDB 'Microsoft.Sql/servers/databases@2022-05-01-preview' = {
-  parent: sqlServer
-  name: sqlDatabaseName
-  location: location
-
-  sku: {
-    name: 'Basic'
-    tier: 'Basic'
-  }
-}
-
-resource firewallRule 'Microsoft.Sql/servers/firewallRules@2022-05-01-preview' = {
-  parent: sqlServer
-  name: 'AllowAzureServices'
-
-  properties: {
-    startIpAddress: '0.0.0.0'
-    endIpAddress: '0.0.0.0'
   }
 }
 
