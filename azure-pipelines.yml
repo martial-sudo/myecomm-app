@@ -8,7 +8,7 @@ steps:
 
 - task: AzureCLI@2
   inputs:
-    azureSubscription: 'Azure-Service-Connection'
+    azureSubscription: 'azure-ap'
     scriptType: bash
     scriptLocation: inlineScript
     inlineScript: |
@@ -20,7 +20,7 @@ steps:
 
 - task: AzureCLI@2
   inputs:
-    azureSubscription: 'Azure-Service-Connection'
+    azureSubscription: 'azure-ap'
     scriptType: bash
     scriptLocation: inlineScript
     inlineScript: |
